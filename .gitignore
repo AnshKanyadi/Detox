@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 venv/
+backend/venv/
 __pycache__/
 
 # Config with secrets
@@ -30,5 +31,3 @@ logs/
 # Test
 coverage/
 .pytest_cache/
-
-backend/

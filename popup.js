@@ -13,10 +13,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let currentMode = 'local';
 
-  // Load initial state
   loadStatus();
 
-  // Toggle handler
   enableToggle.addEventListener('change', async () => {
     const isEnabled = enableToggle.checked;
     await chrome.storage.local.set({ enabled: isEnabled });
@@ -32,21 +30,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Server mode buttons
   localModeBtn.addEventListener('click', () => setServerMode('local'));
   hostedModeBtn.addEventListener('click', () => setServerMode('hosted'));
 
-  // Privacy link
   privacyLink.addEventListener('click', (e) => {
     e.preventDefault();
     chrome.runtime.sendMessage({ type: 'GET_PRIVACY_POLICY' }, (policy) => {
       if (policy) {
         alert(
           `DETOX PRIVACY POLICY\n\n` +
-          `📦 Images: ${policy.data_collection.images}\n\n` +
-          `📝 OCR Results: ${policy.data_collection.ocr_results}\n\n` +
-          `⏱️ Data Retention: ${policy.data_retention}\n\n` +
-          `🔒 Encryption: ${policy.encryption}`
+          `Images: ${policy.data_collection.images}\n\n` +
+          `OCR Results: ${policy.data_collection.ocr_results}\n\n` +
+          `Data Retention: ${policy.data_retention}\n\n` +
+          `Encryption: ${policy.encryption}`
         );
       } else {
         alert('Privacy policy not available. Using local mode keeps all data on your machine.');
@@ -72,7 +68,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (response?.success) {
         currentMode = mode;
         updateModeUI(mode);
-        // Recheck API
         chrome.runtime.sendMessage({ type: 'CHECK_API' }, (result) => {
           updateApiUI(result?.available, result?.url);
         });
@@ -112,14 +107,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
       apiDot.className = 'dot error';
       if (currentMode === 'local') {
-        apiText.textContent = 'Offline - Start local server';
+        apiText.textContent = 'Offline - Start local server 67676767';
       } else {
-        apiText.textContent = 'Hosted API unavailable';
+        apiText.textContent = 'Hosted API unavailable bruh';
       }
-      apiText.className = 'api-text error';
+      apiText.className = 'api-text error :(';
     }
   }
 
-  // Refresh status periodically
   setInterval(loadStatus, 5000);
 });

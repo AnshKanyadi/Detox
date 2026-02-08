@@ -1,35 +1,20 @@
-/**
- * Detox Background Service Worker
- * Supports both local and hosted API modes
- */
-
-// =============================================================================
-// Configuration
-// =============================================================================
-
 const CONFIG = {
-  // Server options
   servers: {
     local: 'http://localhost:8000',
     hosted: 'https://detoxbackend-production.up.railway.app'
   },
-  defaultMode: 'local',  // 'local' or 'hosted'
+  defaultMode: 'local',
   timeout: 120000
 };
 
 let currentMode = CONFIG.defaultMode;
 let currentApiUrl = CONFIG.servers[currentMode];
 
-// =============================================================================
-// API Communication
-// =============================================================================
-
 async function analyzeImage(base64Image) {
   const startTime = Date.now();
-  
   try {
     console.log(`Detox: Sending to ${currentMode} server...`);
-    
+
     const response = await fetch(`${currentApiUrl}/analyze`, {
       method: 'POST',
       headers: {
@@ -39,39 +24,37 @@ async function analyzeImage(base64Image) {
     });
 
     if (response.status === 429) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: 'Rate limit exceeded. Please wait a moment.',
-        detections: [] 
+        detections: []
       };
     }
 
     if (!response.ok) {
-      const error = await response.text();
+      await response.text();
       throw new Error(`API error: ${response.status}`);
     }
 
     const result = await response.json();
     console.log(`Detox: Processed in ${Date.now() - startTime}ms`);
-    
+
     return result;
-    
   } catch (error) {
     console.error('Detox: API error:', error.message);
-    
-    // If hosted fails, suggest local
+
     if (currentMode === 'hosted') {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: 'Hosted API unavailable. Try switching to local mode.',
-        detections: [] 
+        detections: []
       };
     }
-    
-    return { 
-      success: false, 
+
+    return {
+      success: false,
       error: error.message,
-      detections: [] 
+      detections: []
     };
   }
 }
@@ -97,10 +80,6 @@ async function getPrivacyPolicy() {
   } catch {}
   return null;
 }
-
-// =============================================================================
-// Message Handling
-// =============================================================================
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'ANALYZE_IMAGE') {
@@ -167,10 +146,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return false;
 });
 
-// =============================================================================
-// Statistics
-// =============================================================================
-
 async function updateStats(foundSensitive) {
   const { stats = { scanned: 0, protected: 0 } } = 
     await chrome.storage.local.get(['stats']);
@@ -180,10 +155,6 @@ async function updateStats(foundSensitive) {
   
   await chrome.storage.local.set({ stats });
 }
-
-// =============================================================================
-// Lifecycle
-// =============================================================================
 
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install') {
@@ -196,7 +167,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   }
 });
 
-// Load saved server mode
 chrome.storage.local.get(['serverMode', 'customServerUrl']).then(({ serverMode, customServerUrl }) => {
   if (serverMode && CONFIG.servers[serverMode]) {
     currentMode = serverMode;

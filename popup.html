@@ -6,274 +6,99 @@
   <title>Detox</title>
   <style>
     :root {
-      --bg: #0a0a0b;
-      --bg-card: #141416;
-      --bg-hover: #1a1a1d;
-      --accent: #00d4aa;
-      --accent-glow: rgba(0, 212, 170, 0.3);
+      --bg: #050505;
+      --panel: #0d0d0f;
+      --panel-hover: #141418;
+      --border: #1c1c20;
       --text: #f5f5f7;
-      --text-dim: #8e8e93;
-      --text-muted: #636366;
-      --border: rgba(255, 255, 255, 0.08);
-      --danger: #ff6b6b;
-      --warning: #f59e0b;
+      --text-dim: #9c9ca3;
+      --accent: #ffffff;
+      --danger: #ff5c5c;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       width: 300px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: 'SF Pro Display', -apple-system, 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
+      letter-spacing: 0.1px;
     }
 
-    .container { padding: 20px; }
+    .container { padding: 18px; display: grid; gap: 14px; }
 
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
+    .header { display: flex; align-items: center; gap: 12px; }
 
     .logo {
-      width: 38px;
-      height: 38px;
-      background: linear-gradient(135deg, var(--accent), #00a086);
+      width: 38px; height: 38px;
       border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 16px var(--accent-glow);
+      background: radial-gradient(circle at 20% 20%, #2a2a2f 0, #0f0f12 60%, #050505 100%);
+      display: grid; place-items: center;
+      border: 1px solid var(--border);
     }
 
-    .logo svg {
-      width: 20px;
-      height: 20px;
-      fill: var(--bg);
-    }
+    .logo svg { width: 20px; height: 20px; fill: var(--text); }
 
-    .title {
-      font-size: 17px;
-      font-weight: 700;
-      background: linear-gradient(135deg, var(--text), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .subtitle {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
+    .title { font-size: 17px; font-weight: 700; }
+    .subtitle { font-size: 11px; color: var(--text-dim); }
 
     .card {
-      background: var(--bg-card);
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 14px;
+      padding: 12px 14px;
     }
 
-    .row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+    .row { display: flex; align-items: center; justify-content: space-between; }
+    .status-left { display: flex; align-items: center; gap: 8px; }
 
-    .status-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--accent); box-shadow: 0 0 0 4px rgba(255,255,255,0.05); }
+    .dot.off { background: var(--text-dim); box-shadow: none; }
+    .dot.error { background: var(--danger); box-shadow: 0 0 0 4px rgba(255,92,92,0.12); }
 
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 8px var(--accent-glow);
-    }
-
-    .dot.off { background: var(--text-muted); box-shadow: none; }
-    .dot.error { background: var(--danger); box-shadow: 0 0 8px rgba(255,107,107,0.3); }
-    .dot.warning { background: var(--warning); box-shadow: 0 0 8px rgba(245,158,11,0.3); }
-
-    .toggle {
-      position: relative;
-      width: 42px;
-      height: 24px;
-    }
-
+    .toggle { position: relative; width: 42px; height: 24px; }
     .toggle input { opacity: 0; width: 0; height: 0; }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      inset: 0;
-      background: var(--text-muted);
-      border-radius: 24px;
-      transition: 0.2s;
-    }
-
-    .slider::before {
-      content: '';
-      position: absolute;
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background: white;
-      border-radius: 50%;
-      transition: 0.2s;
-    }
-
+    .slider { position: absolute; inset: 0; background: #1d1d22; border-radius: 24px; transition: 0.2s; border: 1px solid var(--border); }
+    .slider::before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: var(--text); border-radius: 50%; transition: 0.2s; }
     .toggle input:checked + .slider { background: var(--accent); }
-    .toggle input:checked + .slider::before { transform: translateX(18px); }
+    .toggle input:checked + .slider::before { transform: translateX(18px); background: #0b0b0b; }
 
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
+    .section-title { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
 
-    .stat {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--accent);
-    }
-
-    .stat-label {
-      font-size: 10px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    .section-title {
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
-
-    .server-mode {
-      margin-bottom: 14px;
-    }
-
-    .mode-options {
-      display: flex;
-      gap: 8px;
-    }
-
+    .mode-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
     .mode-btn {
-      flex: 1;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text-dim);
       padding: 10px 8px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg-card);
-      color: var(--text-dim);
+      border-radius: 9px;
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
-      text-align: center;
+      transition: all 0.15s ease;
     }
+    .mode-btn:hover { background: var(--panel-hover); color: var(--text); }
+    .mode-btn.active { border-color: #2c2c32; background: #141418; color: var(--text); }
 
-    .mode-btn:hover {
-      background: var(--bg-hover);
-    }
-
-    .mode-btn.active {
-      border-color: var(--accent);
-      background: rgba(0, 212, 170, 0.1);
-      color: var(--accent);
-    }
-
-    .mode-btn .icon {
-      display: block;
-      font-size: 16px;
-      margin-bottom: 4px;
-    }
-
-    .api-status {
-      padding: 10px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 11px;
-      margin-bottom: 14px;
-    }
-
-    .api-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .api-url {
-      font-size: 9px;
-      color: var(--text-muted);
-      margin-top: 4px;
-      word-break: break-all;
-    }
-
+    .api-status { padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); font-size: 11px; display: grid; gap: 6px; }
+    .api-row { display: flex; align-items: center; gap: 6px; }
     .api-text { color: var(--text-dim); }
-    .api-text.connected { color: var(--accent); }
+    .api-text.connected { color: var(--text); }
     .api-text.error { color: var(--danger); }
+    .api-url { font-size: 9px; color: var(--text-dim); word-break: break-all; }
 
-    .features {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 5px;
-      margin-bottom: 14px;
-    }
+    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
+    .stat-value { font-size: 21px; font-weight: 700; color: var(--text); }
+    .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; }
 
-    .feature {
-      font-size: 10px;
-      padding: 5px 7px;
-      background: var(--bg-card);
-      border-radius: 5px;
-      color: var(--text-dim);
-    }
+    .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .feature { font-size: 10px; padding: 6px 8px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; color: var(--text-dim); }
+    .feature span { color: var(--text); }
 
-    .feature span { color: var(--accent); }
-
-    .privacy-note {
-      background: rgba(0, 212, 170, 0.1);
-      border: 1px solid rgba(0, 212, 170, 0.2);
-      border-radius: 8px;
-      padding: 10px;
-      font-size: 10px;
-      color: var(--text-dim);
-      margin-bottom: 14px;
-    }
-
-    .privacy-note strong {
-      color: var(--accent);
-    }
-
-    .footer {
-      text-align: center;
-      font-size: 10px;
-      color: var(--text-muted);
-    }
-
-    .footer a {
-      color: var(--accent);
-      text-decoration: none;
-    }
+    .footer { text-align: center; font-size: 10px; color: var(--text-dim); }
+    .footer a { color: var(--text); text-decoration: none; }
   </style>
 </head>
 <body>
@@ -301,17 +126,11 @@
       </div>
     </div>
 
-    <div class="server-mode">
-      <div class="section-title">Server Mode</div>
+    <div class="card" style="gap: 10px; display: grid;">
+      <div class="section-title">Server</div>
       <div class="mode-options">
-        <button class="mode-btn" id="localMode" data-mode="local">
-          <span class="icon">🏠</span>
-          Local
-        </button>
-        <button class="mode-btn" id="hostedMode" data-mode="hosted">
-          <span class="icon">☁️</span>
-          Hosted
-        </button>
+        <button class="mode-btn" id="localMode" data-mode="local">Local</button>
+        <button class="mode-btn" id="hostedMode" data-mode="hosted">Hosted</button>
       </div>
     </div>
 
@@ -321,10 +140,6 @@
         <span class="api-text" id="apiText">Checking...</span>
       </div>
       <div class="api-url" id="apiUrl"></div>
-    </div>
-
-    <div class="privacy-note">
-      <strong>🔒 Privacy First:</strong> Images are never stored. All processing is ephemeral. Only coordinates are returned.
     </div>
 
     <div class="stats">
@@ -340,18 +155,18 @@
 
     <div class="section-title">Auto-Detects</div>
     <div class="features">
-      <div class="feature"><span>●</span> Phone Numbers</div>
-      <div class="feature"><span>●</span> Emails</div>
-      <div class="feature"><span>●</span> SSN / IDs</div>
-      <div class="feature"><span>●</span> Credit Cards</div>
-      <div class="feature"><span>●</span> Passwords</div>
-      <div class="feature"><span>●</span> WiFi Keys</div>
-      <div class="feature"><span>●</span> API Keys</div>
-      <div class="feature"><span>●</span> Addresses</div>
+      <div class="feature"><span>▪</span> Phone Numbers</div>
+      <div class="feature"><span>▪</span> Emails</div>
+      <div class="feature"><span>▪</span> SSN / IDs</div>
+      <div class="feature"><span>▪</span> Credit Cards</div>
+      <div class="feature"><span>▪</span> Passwords</div>
+      <div class="feature"><span>▪</span> WiFi Keys</div>
+      <div class="feature"><span>▪</span> API Keys</div>
+      <div class="feature"><span>▪</span> Addresses</div>
     </div>
 
     <div class="footer">
-      <a href="#" id="privacyLink">Privacy Policy</a> · Powered by PaddleOCR
+      <a href="#" id="privacyLink">Privacy Policy</a>
     </div>
   </div>
 

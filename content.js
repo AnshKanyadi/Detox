@@ -1,28 +1,18 @@
-/**
- * Detox Content Script
- * Intercepts file uploads on Instagram and redacts sensitive information
- * Uses Detox API backend for OCR and detection
- */
-
 (function() {
   'use strict';
 
   const CONFIG = {
     blur: {
-      padding: 15,      // Padding around detected text
-      extraMargin: 0.15, // Add 15% extra to width/height for safety
-      color: '#000000'
+      padding: 15,
+      extraMargin: 0.15,
+      color: '#000'
     },
-    timeout: 180000  // 180 seconds (3 min - OCR on CPU can be slow)
+    timeout: 180000
   };
 
   let isEnabled = true;
   let isProcessing = false;
-  let isHandingOff = false;  // Flag to prevent re-processing
-
-  // ===========================================
-  // Interceptor
-  // ===========================================
+  let isHandingOff = false;
 
   function initInterceptor() {
     console.log('Detox: Initializing on Instagram');
@@ -45,24 +35,13 @@
     if (input.dataset.detoxAttached) return;
     input.dataset.detoxAttached = 'true';
 
-    // Store original files before any handler runs
     let originalFiles = null;
-    let processingPromise = null;
 
     input.addEventListener('change', function(event) {
-      // Skip if we're handing off processed files
-      if (isHandingOff) {
-        console.log('Detox: Handoff in progress, letting through');
-        return;
-      }
-
-      if (!isEnabled) {
-        console.log('Detox: Disabled, skipping');
-        return;
-      }
+      if (isHandingOff) return;
+      if (!isEnabled) return;
 
       if (isProcessing) {
-        console.log('Detox: Already processing, blocking');
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
@@ -72,15 +51,11 @@
       const files = event.target.files;
       if (!files?.length) return;
 
-      // IMMEDIATELY stop the event before any async work
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
 
-      // Copy files before clearing
       originalFiles = Array.from(files);
-      
-      // Clear the input immediately to prevent Instagram from reading it
       const dt = new DataTransfer();
       input.files = dt.files;
 
@@ -89,21 +64,19 @@
       isProcessing = true;
       showOverlay();
 
-      // Process async
       processFiles(input, originalFiles);
-    }, true);  // Capture phase
+    }, true);
   }
 
   async function processFiles(input, files) {
     try {
       const processedFiles = [];
-      
       for (const file of files) {
         if (file.type.startsWith('image/')) {
           updateStatus('Scanning image...');
           const result = await processImage(file);
           processedFiles.push(result.file);
-          
+
           chrome.runtime.sendMessage({
             type: 'DETOX_SCAN_COMPLETE',
             foundSensitive: result.redacted > 0
@@ -119,28 +92,23 @@
         }
       }
 
-      // Handoff to Instagram
       console.log('Detox: Handing off', processedFiles.length, 'processed file(s)');
       isHandingOff = true;
-      
+
       const dt = new DataTransfer();
       processedFiles.forEach(f => dt.items.add(f));
       input.files = dt.files;
-      
-      // Small delay then dispatch
+
       await new Promise(r => setTimeout(r, 50));
-      
+
       const changeEvent = new Event('change', { bubbles: true, cancelable: true });
       input.dispatchEvent(changeEvent);
-      
-      // Reset handoff flag
-      setTimeout(() => { isHandingOff = false; }, 200);
 
+      setTimeout(() => { isHandingOff = false; }, 200);
     } catch (error) {
       console.error('Detox: Processing error', error);
       showNotification('Processing failed: ' + error.message, 'error');
-      
-      // On error, upload original files
+
       isHandingOff = true;
       const dt = new DataTransfer();
       files.forEach(f => dt.items.add(f));
@@ -153,16 +121,10 @@
     }
   }
 
-  // ===========================================
-  // Image Processing
-  // ===========================================
-
   async function processImage(file) {
-    // Convert to base64
     updateStatus('Preparing image...');
     const base64 = await fileToBase64(file);
-    
-    // Load image for dimensions and redaction
+
     const img = await loadImage(file);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -170,40 +132,33 @@
     canvas.height = img.height;
     ctx.drawImage(img, 0, 0);
 
-    // Send to API
-    updateStatus('Analyzing with AI OCR...');
+    updateStatus('Analyzing...');
     const result = await analyzeWithAPI(base64);
-    
+
     console.log('Detox: Full API response:', JSON.stringify(result, null, 2));
-    
+
     if (!result.success) {
-      console.warn('Detox: API error:', result.error);
-      updateStatus('API unavailable - skipping scan');
+      updateStatus('API unavailable');
       return { file, redacted: 0 };
     }
 
     if (!result.detections?.length) {
-      updateStatus('No sensitive info found ✓');
+      updateStatus('No sensitive info found');
       return { file, redacted: 0 };
     }
 
-    console.log('Detox: Found', result.detections.length, 'sensitive items:', 
-      result.detections.map(d => `${d.type}: "${d.text}" at (${d.bbox.x}, ${d.bbox.y})`));
-    
+    console.log('Detox: Found', result.detections.length, 'sensitive items');
     updateStatus(`Redacting ${result.detections.length} item(s)...`);
 
-    // Apply redactions (scale bbox if image was resized on backend)
     const scale = result.scale || 1.0;
-    console.log('Detox: Applying scale factor:', scale);
     const redactedCount = redactRegions(ctx, result.detections, scale);
 
-    // Export as new file
     const blob = await new Promise(resolve => canvas.toBlob(resolve, file.type || 'image/jpeg', 0.95));
     const newFile = new File([blob], file.name, { type: file.type || 'image/jpeg' });
 
     console.log('Detox: Created redacted file:', newFile.name, newFile.size);
-    
-    updateStatus(`Done - ${redactedCount} item(s) redacted ✓`);
+
+    updateStatus(`Done - ${redactedCount} item(s) redacted`);
     return { file: newFile, redacted: redactedCount };
   }
 
@@ -233,7 +188,6 @@
       const timeout = setTimeout(() => {
         resolve({ success: false, error: 'Timeout', detections: [] });
       }, CONFIG.timeout);
-      
       chrome.runtime.sendMessage(
         { type: 'ANALYZE_IMAGE', image: base64Image },
         (response) => {
@@ -251,49 +205,34 @@
   function redactRegions(ctx, detections, scale = 1.0) {
     const { padding, extraMargin, color } = CONFIG.blur;
     let count = 0;
-    
+
     ctx.fillStyle = color;
-    
+
     for (const detection of detections) {
       const { bbox } = detection;
-      if (!bbox || typeof bbox.x !== 'number') {
-        console.warn('Detox: Invalid bbox:', detection);
-        continue;
-      }
-      
-      // Scale coordinates back to original image size
+      if (!bbox || typeof bbox.x !== 'number') continue;
+
       const scaledX = bbox.x * scale;
       const scaledY = bbox.y * scale;
       const scaledW = bbox.width * scale;
       const scaledH = bbox.height * scale;
-      
-      // Add extra margin (percentage of size) for better coverage
+
       const marginW = scaledW * extraMargin;
       const marginH = scaledH * extraMargin;
-      
-      // Calculate final box with padding and margin
+
       const x = Math.max(0, scaledX - padding - marginW);
       const y = Math.max(0, scaledY - padding - marginH);
       const w = scaledW + (padding * 2) + (marginW * 2);
       const h = scaledH + (padding * 2) + (marginH * 2);
-      
-      // Skip suspiciously large boxes
-      if (w > ctx.canvas.width * 0.8 || h > ctx.canvas.height * 0.6) {
-        console.warn('Detox: Skipping oversized box:', detection);
-        continue;
-      }
-      
-      console.log(`Detox: Drawing redaction at (${Math.round(x)}, ${Math.round(y)}) size ${Math.round(w)}x${Math.round(h)} for "${detection.text}"`);
+
+      if (w > ctx.canvas.width * 0.8 || h > ctx.canvas.height * 0.6) continue;
+
       ctx.fillRect(x, y, w, h);
       count++;
     }
-    
+
     return count;
   }
-
-  // ===========================================
-  // UI
-  // ===========================================
 
   let overlay = null;
   let statusEl = null;
@@ -302,32 +241,11 @@
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.innerHTML = `
-        <div style="
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.85);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          z-index: 99999;
-          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-          color: white;
-        ">
-          <div style="
-            width: 48px;
-            height: 48px;
-            border: 3px solid rgba(255,255,255,0.2);
-            border-top-color: #00d4aa;
-            border-radius: 50%;
-            animation: detox-spin 1s linear infinite;
-          "></div>
-          <div id="detox-status" style="margin-top: 20px; font-size: 15px; font-weight: 500;">Processing...</div>
-          <div style="margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.5);">Powered by Detox AI</div>
+        <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 99999; font-family: 'SF Pro Display', -apple-system, sans-serif; color: white; gap: 16px;">
+          <div style="width: 44px; height: 44px; border: 3px solid rgba(255,255,255,0.18); border-top-color: #fff; border-radius: 50%; animation: detox-spin 1s linear infinite;"></div>
+          <div id="detox-status" style="font-size: 15px; font-weight: 600; letter-spacing: 0.3px;">Processing...</div>
         </div>
-        <style>
-          @keyframes detox-spin { to { transform: rotate(360deg); } }
-        </style>
+        <style>@keyframes detox-spin { to { transform: rotate(360deg); } }</style>
       `;
       document.body.appendChild(overlay);
       statusEl = document.getElementById('detox-status');
@@ -345,48 +263,33 @@
 
   function showNotification(message, type = 'info') {
     const colors = {
-      info: 'linear-gradient(135deg, #00d4aa, #00a086)',
-      success: 'linear-gradient(135deg, #00d4aa, #00a086)',
-      error: 'linear-gradient(135deg, #ff6b6b, #ee5a5a)',
-      warning: 'linear-gradient(135deg, #f59e0b, #d97706)'
+      info: '#121212',
+      success: '#121212',
+      error: '#1e1e1e'
     };
-    
+
+    const border = {
+      info: '1px solid rgba(255,255,255,0.12)',
+      success: '1px solid rgba(255,255,255,0.16)',
+      error: '1px solid rgba(255,255,255,0.22)'
+    };
+
     const notif = document.createElement('div');
-    notif.style.cssText = `
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: ${colors[type]};
-      color: white;
-      padding: 14px 24px;
-      border-radius: 12px;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      z-index: 100000;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-      opacity: 0;
-      transition: all 0.3s ease;
-    `;
+    notif.style.cssText = `position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: ${colors[type]}; color: #f5f5f5; padding: 12px 18px; border-radius: 10px; font-family: 'SF Pro Display', -apple-system, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.2px; z-index: 100000; box-shadow: 0 12px 40px rgba(0,0,0,0.35); opacity: 0; transition: all 0.25s ease; backdrop-filter: blur(6px); ${border[type]};`;
     notif.textContent = message;
     document.body.appendChild(notif);
-    
+
     requestAnimationFrame(() => {
       notif.style.opacity = '1';
       notif.style.transform = 'translateX(-50%) translateY(0)';
     });
-    
+
     setTimeout(() => {
       notif.style.opacity = '0';
       notif.style.transform = 'translateX(-50%) translateY(20px)';
-      setTimeout(() => notif.remove(), 300);
-    }, 4000);
+      setTimeout(() => notif.remove(), 250);
+    }, 3200);
   }
-
-  // ===========================================
-  // Init
-  // ===========================================
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === 'DETOX_TOGGLE') {

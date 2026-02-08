@@ -1,4 +1,4 @@
-# 🛡️ Detox - Privacy Protection for Social Media
+# Detox - Privacy Protection for Social Media
 
 **Automatically detect and redact sensitive information before you post.**
 
@@ -6,7 +6,7 @@ Detox is a Chrome extension that scans images for personally identifiable inform
 
 ![Detox Demo](docs/demo.gif)
 
-## ✨ Features
+##  Features
 
 - **Real-time Detection** - Scans images as you upload
 - **Smart OCR** - Uses AI-powered text recognition
@@ -15,7 +15,7 @@ Detox is a Chrome extension that scans images for personally identifiable inform
 - **Privacy-First** - Images are never stored, processed in memory only
 - **Fast** - OCR completes in 5-15 seconds
 
-## 🔒 What It Detects
+## What It Detects
 
 | Type | Example |
 |------|---------|
@@ -30,7 +30,7 @@ Detox is a Chrome extension that scans images for personally identifiable inform
 | Dates of Birth | 01/15/1990 |
 | ZIP Codes | 94102, 94102-1234 |
 
-## 🚀 How It Works
+##  How It Works
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
@@ -87,14 +87,7 @@ See [backend/README.md](backend/README.md) for deployment instructions.
 
 ## 📄 License
 
-This project is licensed under the [Business Source License 1.1](LICENSE).
-
-- ✅ Free for personal and educational use
-- ✅ Free to view, modify, and learn from
-- ❌ Commercial use requires a license
-- 🔄 Converts to MIT License after 4 years
-
-For commercial licensing, contact [@anshkanyadi](https://github.com/anshkanyadi).
+This project is licensed under the [MIT License](LICENSE).
 
 ## 🤝 Contributing
 
