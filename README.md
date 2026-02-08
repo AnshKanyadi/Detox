@@ -20,11 +20,11 @@ Detox is a Chrome extension that scans images for personally identifiable inform
 | Type | Example |
 |------|---------|
 | Phone Numbers | (415) 123-4567, +1-800-555-0199 |
-| Email Addresses | john@example.com |
+| Email Addresses | johnpork@example.com |
 | Social Security | 123-45-6789 |
 | Credit Cards | 4111-1111-1111-1111 |
 | IP Addresses | 192.168.1.1 |
-| Passwords | password: secret123 |
+| Passwords | password: secret6767 |
 | WiFi Credentials | SSID: MyNetwork |
 | API Keys | api_key: sk_live_xxx |
 | Dates of Birth | 01/15/1990 |
@@ -89,15 +89,15 @@ See [backend/README.md](backend/README.md) for deployment instructions.
 
 This project is licensed under the [MIT License](LICENSE).
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome for non-commercial improvements! Please read the license before contributing.
 
-## 📬 Contact
+## Contact
 
 - GitHub: [@anshkanyadi](https://github.com/anshkanyadi)
 - Project Link: [https://github.com/anshkanyadi/detox](https://github.com/anshkanyadi/detox)
 
 ---
 
-**Built with ❤️ for privacy**
+**This could be the start of something big (or a total flop), who knows?**
