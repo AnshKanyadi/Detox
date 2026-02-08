@@ -51,7 +51,7 @@ Detox is a Chrome extension that scans images for personally identifiable inform
 4. **Redact** - Black boxes drawn over sensitive regions
 5. **Upload** - Safe image uploaded to Instagram
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 **Extension:**
 - Vanilla JavaScript
@@ -63,7 +63,7 @@ Detox is a Chrome extension that scans images for personally identifiable inform
 - RapidOCR (ONNX-based OCR)
 - Docker + Railway
 
-## 📦 Installation
+## Installation
 
 ### Chrome Extension
 
@@ -76,7 +76,7 @@ Detox is a Chrome extension that scans images for personally identifiable inform
 
 See [backend/README.md](backend/README.md) for deployment instructions.
 
-## 🔐 Privacy & Security
+## Privacy & Security
 
 - **Zero Storage** - Images are never saved to disk
 - **No Logging** - Image data is never logged
